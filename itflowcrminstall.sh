@@ -80,7 +80,7 @@ chown -R www-data:www-data /var/www/
 
 #Create MySQl DB
     mysql -e "CREATE DATABASE ITFlow /*\!40100 DEFAULT CHARACTER SET utf8 */;"
-    mysql -e "CREATE USER PITTCRM@localhost IDENTIFIED BY '${mysqlpwd}';"
+    mysql -e "CREATE USER ITFlow@localhost IDENTIFIED BY '${mysqlpwd}';"
     mysql -e "GRANT ALL PRIVILEGES ON ITFlow.* TO 'ITFlow'@'localhost';"
     mysql -e "FLUSH PRIVILEGES;"
 
