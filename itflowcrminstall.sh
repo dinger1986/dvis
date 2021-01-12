@@ -73,8 +73,8 @@ cd /var/www/${domain}
 git clone https://github.com/johnnyq/itflow.git
 
 #Move files and fix permissions
-mv /var/www/${domain}/pittpc_crm/* /var/www/${domain}/
-rm -rf /var/www/${domain}/pittpc_crm/
+mv /var/www/${domain}/itflow/* /var/www/${domain}/
+rm -rf /var/www/${domain}/itflow/
 chown -R www-data:www-data /var/www/
 
 
