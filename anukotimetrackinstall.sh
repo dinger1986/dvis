@@ -70,8 +70,8 @@ sudo certbot --apache
 cd /var/www/${domain}
 
 #Download Anuko Time Tracker
-wget wget https://www.anuko.com/download/time_tracker/time_tracker_pdf.zip
-unzip 
+wget https://www.anuko.com/download/time_tracker/time_tracker_pdf.zip
+unzip time_tracker_pdf.zip 
 
 #Move files and fix permissions
 mv /var/www/${domain}/timetracker/* /var/www/${domain}/
