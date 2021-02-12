@@ -295,9 +295,9 @@ echo "${ttconf}" > /var/www/${domain}/WEB-INF/config.php
 chown -R www-data:www-data /var/www/${domain}/WEB-INF/config.php
 
 
-printf >&2 "Please setup the database by going to: https://${domain}/dbinstall.php"
+printf >&2 "Please setup the database by going to: https://${domain}/dbinstall.php then remove or chmod 000 dbinstall.php"
 printf >&2 "\n\n"
-printf >&2 "Then login using admin/secret by going to https://${domain} and setup new groups and users"
+printf >&2 "Then login using admin/secret by going to https://${domain}, setup new groups and users and change the admin password from Options menu"
 printf >&2 "\n\n"
 printf >&2 "Your database user and database name is timetracker and MYSQL password is '${mysqlpwd}'\n\n"
 
