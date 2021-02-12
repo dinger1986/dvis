@@ -83,7 +83,7 @@ chmod 777 /var/www/${domain}/WEB-INF/templates_c
 #Create MySQl DB
     mysql -e "CREATE DATABASE timetracker /*\!40100 DEFAULT CHARACTER SET utf8mb4 */;"
     mysql -e "CREATE USER timetracker@localhost IDENTIFIED BY '${mysqlpwd}';"
-    mysql -e "GRANT ALL PRIVILEGES ON ITFlow.* TO 'timetracker'@'localhost';"
+    mysql -e "GRANT ALL PRIVILEGES ON timetracker.* TO 'timetracker'@'localhost';"
     mysql -e "FLUSH PRIVILEGES;"
 	
 #TimeTrack config
