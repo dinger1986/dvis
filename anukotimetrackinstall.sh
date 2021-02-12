@@ -25,7 +25,7 @@ sudo apt-get update && sudo apt-get -y upgrade
 sudo apt-get install -y apache2
 sudo apt-get install -y mysql-server
 sudo mysql_secure_installation
-sudo apt-get install -y php libapache2-mod-php php-mysql php-mbstring php-curl 
+sudo apt-get install -y php libapache2-mod-php php-mysql php-mbstring php-curl php-gd
 sudo apt-get install -y rewrite libapache2-mod-md
 sudo apt-get install -y certbot python3-certbot-apache
 sudo apt-get install -y unzip
@@ -127,7 +127,7 @@ set_include_path(realpath(dirname(__FILE__).'/lib/pear') . PATH_SEPARATOR . get_
 // CHANGE 3 PARAMETERS HERE!
 // In this example: "root" is username, "no" is password, "dbname" is database name.
 //
-define('DSN', 'mysqli://timetrack:${mysqlpwd}@localhost/timetrack?charset=utf8mb4');
+define('DSN', 'mysqli://timetracker:${mysqlpwd}@localhost/timetracker?charset=utf8mb4');
 // Do NOT change charset unless you upgraded from an older Time Tracker where charset was NOT specified
 // and now you see some corrupted characters. See http://dev.mysql.com/doc/refman/5.0/en/charset-mysql.html
 
@@ -295,9 +295,11 @@ echo "${ttconf}" > /var/www/${domain}/WEB-INF/config.php
 chown -R www-data:www-data /var/www/${domain}/WEB-INF/config.php
 
 
-printf >&2 "Please go to admin url: https://${domain}"
+printf >&2 "Please setup the database by going to: https://${domain}/dbinstall.php"
 printf >&2 "\n\n"
-printf >&2 "Enter timetracker as database user and database name. Enter '${mysqlpwd}' as MySQL Password\n\n"
+printf >&2 "Then login using admin/secret by going to https://${domain} and setup new groups and users"
+printf >&2 "\n\n"
+printf >&2 "Your database user and database name is timetracker and MYSQL password is '${mysqlpwd}'\n\n"
 
 echo "Press any key to finish install"
 while [ true ] ; do
