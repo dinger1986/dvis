@@ -1,6 +1,6 @@
 #!/bin/bash
 
-####Just scripted up to work from @Yasd on Discord forum
+####Just scripted up to work from @Yasd and @sebcashmag on Discord forum
 
 #check if running on ubuntu 20.04, Debian or Raspbian
 osname=$(lsb_release -si); osname=${osname^}
@@ -155,8 +155,8 @@ dashlayconf="$(cat << EOF
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 2,
-  "iteration": 1625438665403,
+  "id": 9,
+  "iteration": 1625392729225,
   "links": [
     {
       "asDropdown": false,
@@ -181,9 +181,1020 @@ dashlayconf="$(cat << EOF
         "x": 0,
         "y": 0
       },
+      "id": 49,
+      "panels": [],
+      "title": "Information de l'agent sélectionné",
+      "type": "row"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 57,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": true
+        },
+        "text": {
+          "valueSize": 18
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "8.0.4",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select \n  concat('Agence: ',clients_site.name,' / Client: ', agents_agent.hostname,' ',agents_agent.DESCRIPTION)\nfrom \n  agents_agent\n  LEFT OUTER JOIN clients_site on agents_agent.site_id = clients_site.id\n  where \n    agents_agent.DESCRIPTION = $Agents_Description",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "Connected": {
+                  "color": "dark-green",
+                  "index": 1
+                },
+                "No Connected": {
+                  "color": "dark-red",
+                  "index": 0
+                }
+              },
+              "type": "value"
+            },
+            {
+              "options": {
+                "match": "null",
+                "result": {
+                  "color": "transparent",
+                  "index": 2
+                }
+              },
+              "type": "special"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 5,
+        "x": 0,
+        "y": 2
+      },
+      "id": 53,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "/.*/",
+          "values": false
+        },
+        "text": {},
+        "textMode": "value"
+      },
+      "pluginVersion": "8.0.4",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "select   \r\nCASE\r\n  WHEN (count(*) = 1) THEN 'Connected'\r\n  WHEN (count(*) = 0) THEN 'No Connected'\r\n  ELSE ''\r\n END AS modifiedpvc\r\n  \r\n from agents_agent\r\n   --where (agents_agent.hostname = $Agents_HostName or agents_agent.description = $Agents_Description)  and\r\n   where agents_agent.description = $Agents_Description  and\r\n   last_seen > NOW()- interval '1 hours'\r\n ",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "description": "Suivre la consommation du CPU pour l'agent sélectionné.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 8,
+            "scaleDistribution": {
+              "log": 10,
+              "type": "log"
+            },
+            "showPoints": "always",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 70
+              },
+              {
+                "color": "dark-red",
+                "value": 90
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 7,
+        "x": 5,
+        "y": 2
+      },
+      "id": 28,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "pluginVersion": "8.0.3",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) / ')) AND check_type='cpuload') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nSELECT \r\n  x AS \"time\",\r\n  y as \"CPU Load\"\r\n  FROM checks_checkhistory\r\n  WHERE x BETWEEN '2021-07-01T13:54:25.526Z' AND '2100-07-02T19:54:25.526Z'\r\n  AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.description = $Agents_Description) AND check_type='cpuload')\r\n  ORDER BY x",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "CPU Load Check",
+      "type": "timeseries"
+    },
+    {
+      "datasource": null,
+      "description": "Suivre la consommation du mémoire pour l'agent sélectionné.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "hue",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "log": 10,
+              "type": "log"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "dark-orange",
+                "value": 70
+              },
+              {
+                "color": "dark-red",
+                "value": 85
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 6,
+        "x": 12,
+        "y": 2
+      },
+      "id": 29,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "pluginVersion": "8.0.3",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) / ')) AND check_type='cpuload') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nSELECT \r\n  x AS \"time\",\r\n  y as \"Memory Usage\"\r\nFROM \r\n  checks_checkhistory\r\nWHERE \r\n  x BETWEEN '2021-07-01T13:54:25.526Z' AND '2100-07-02T19:54:25.526Z'\r\n  AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.DESCRIPTION = $Agents_Description) AND check_type='memory')\r\n  ORDER BY x",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Memory Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": null,
+      "description": "Suivre la consommation du disque pour l'agent sélectionné.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "hue",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "dark-red",
+                "value": 0.5
+              },
+              {
+                "color": "dark-orange",
+                "value": 4.1
+              },
+              {
+                "color": "green",
+                "value": 11.1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 6,
+        "x": 18,
+        "y": 2
+      },
+      "id": 30,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "pluginVersion": "8.0.3",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) / ')) AND check_type='cpuload') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nSELECT \r\n  x AS \"time\",\r\n  y as \"Disk Usage\"\r\nFROM \r\n  checks_checkhistory\r\nWHERE \r\n  x BETWEEN '2021-07-01T13:54:25.526Z' AND '2100-07-02T19:54:25.526Z'\r\n  AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.DESCRIPTION = $Agents_Description) AND check_type='diskspace')\r\n  ORDER BY x",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Disk Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": null,
+      "description": "Type de l'os de l'agent",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 3,
+        "x": 0,
+        "y": 4
+      },
+      "id": 44,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^concat$/",
+          "values": true
+        },
+        "text": {},
+        "textMode": "value"
+      },
+      "pluginVersion": "8.0.4",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nselect   \r\n  concat(SUBSTRING(agents_agent.operating_system,'(.*),'),' ', wmi_detail->'cpu'->0->0->>'DataWidth',' Bits') \r\n  \r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = $Agents_Description",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "Windows not up to date": {
+                  "color": "dark-red",
+                  "index": 0
+                },
+                "Windows up to date": {
+                  "color": "dark-green",
+                  "index": 1
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 2,
+        "x": 3,
+        "y": 4
+      },
+      "id": 59,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "/.*/",
+          "values": true
+        },
+        "text": {},
+        "textMode": "value"
+      },
+      "pluginVersion": "8.0.4",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  CASE\n   WHEN (has_patches_pending = true) THEN 'Windows not up to date'\n    WHEN (has_patches_pending = false) THEN 'Windows up to date'\n  ELSE 'nothing'\n END AS  Statut\nFROM agents_agent\nwhere\n  agents_agent.DESCRIPTION = $Agents_Description",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "description": "Type de CPU installé",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 5,
+        "x": 0,
+        "y": 6
+      },
+      "id": 50,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "/^concat$/",
+          "values": true
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.0.4",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nselect  \r\n  concat(wmi_detail->'cpu'->0->0->>'Name',' \\ ',wmi_detail->'base_board'->0->0->>'Manufacturer')\r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = $Agents_Description",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "CPU Name",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "description": "Total de la mémoire de l'agent",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 2,
+        "x": 0,
+        "y": 9
+      },
+      "id": 39,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": true
+        },
+        "text": {},
+        "textMode": "value"
+      },
+      "pluginVersion": "8.0.4",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\n\r\nselect   \r\n   concat((total_ram),'Gb / ',concat(wmi_detail->'mem'->0->0->>'Speed','Bits'))\r\n  \r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = $Agents_Description",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Total_Ram",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "description": "Total de l'espace disque libre",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 2,
+        "x": 2,
+        "y": 9
+      },
+      "id": 43,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^concat$/",
+          "values": true
+        },
+        "text": {},
+        "textMode": "value"
+      },
+      "pluginVersion": "8.0.4",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nselect   \r\n  concat(disks->0->>'device',' ', disks->0->>'free',' free on ', disks->0->>'total')\r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = $Agents_Description",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "description": "Total du disque de l'agent",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "dark-green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 70.74
+              },
+              {
+                "color": "dark-red",
+                "value": 85.1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 1,
+        "x": 4,
+        "y": 9
+      },
+      "id": 45,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/.*/",
+          "values": true
+        },
+        "text": {},
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "8.0.4",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nselect\r\n  concat(disks->0->>'percent',' %') as \"Occupation\"\r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = $Agents_Description",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
       "id": 47,
       "panels": [],
-      "title": "Information for Client/Site Selected",
+      "title": "Information sur Client ou site sélectionné",
       "type": "row"
     },
     {
@@ -211,7 +1222,7 @@ dashlayconf="$(cat << EOF
         "h": 3,
         "w": 2,
         "x": 0,
-        "y": 1
+        "y": 13
       },
       "id": 31,
       "options": {
@@ -260,7 +1271,7 @@ dashlayconf="$(cat << EOF
           ]
         }
       ],
-      "title": "Clients",
+      "title": "Client",
       "type": "stat"
     },
     {
@@ -287,7 +1298,7 @@ dashlayconf="$(cat << EOF
         "h": 3,
         "w": 6,
         "x": 2,
-        "y": 1
+        "y": 13
       },
       "id": 24,
       "options": {
@@ -367,7 +1378,7 @@ dashlayconf="$(cat << EOF
         "h": 3,
         "w": 8,
         "x": 8,
-        "y": 1
+        "y": 13
       },
       "id": 20,
       "options": {
@@ -416,7 +1427,7 @@ dashlayconf="$(cat << EOF
           ]
         }
       ],
-      "title": "Alerts",
+      "title": "Avertissement",
       "type": "stat"
     },
     {
@@ -448,7 +1459,7 @@ dashlayconf="$(cat << EOF
         "h": 3,
         "w": 8,
         "x": 16,
-        "y": 1
+        "y": 13
       },
       "id": 23,
       "options": {
@@ -497,8 +1508,323 @@ dashlayconf="$(cat << EOF
           ]
         }
       ],
-      "title": "Errors",
+      "title": "Erreur",
       "type": "stat"
+    },
+    {
+      "datasource": null,
+      "description": "Liste tout les Windows installé",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 0,
+        "y": 16
+      },
+      "id": 26,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true,
+        "text": {
+          "valueSize": 14
+        }
+      },
+      "pluginVersion": "8.0.4",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "  SELECT \r\n  count(*) as \"count\",\r\n  SUBSTRING(agents_agent.operating_system,'(.*)v') AS \"Operating System\"\r\n  FROM agents_agent\r\nINNER JOIN clients_site on site_id = clients_site.id\r\nLEFT OUTER JOIN agents_agentcustomfield on agents_agent.id = agents_agentcustomfield.agent_id\r\n\r\nWHERE (field_id IN (SELECT id FROM core_customfield WHERE name = 'Version_du_logiciel_Restau')\r\nOR field_id is null)\r\nAND site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))\r\nAND site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites)))\r\nGroup by \"Operating System\"\r\nOrder by \"count\" desc\r\n  ",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Type de Windows",
+      "type": "bargauge"
+    },
+    {
+      "datasource": null,
+      "description": "Liste tout les processeurs installé",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 8,
+        "y": 16
+      },
+      "id": 54,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "/.*/",
+          "values": true
+        },
+        "showUnfilled": true,
+        "text": {
+          "valueSize": 14
+        }
+      },
+      "pluginVersion": "8.0.4",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "  SELECT \r\n  count(*) as \"count\",\r\n  wmi_detail->'cpu'->0->0->>'Name' as \"CPU Name\"\r\n  FROM agents_agent\r\nINNER JOIN clients_site on site_id = clients_site.id\r\nLEFT OUTER JOIN agents_agentcustomfield on agents_agent.id = agents_agentcustomfield.agent_id\r\n\r\nWHERE (field_id IN (SELECT id FROM core_customfield WHERE name = 'Version_du_logiciel_Restau')\r\nOR field_id is null)\r\nAND site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))\r\nAND site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites)))\r\nGroup by \"CPU Name\"\r\nOrder by \"count\" desc\r\n  ",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Type processeurs",
+      "type": "bargauge"
+    },
+    {
+      "datasource": null,
+      "description": "Liste tout les mémoire installé",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 16,
+        "y": 16
+      },
+      "id": 55,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true,
+        "text": {
+          "valueSize": 14
+        }
+      },
+      "pluginVersion": "8.0.4",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "  SELECT \r\n  count(*) as \"count\",\r\n  concat((total_ram),' Gb') as \"Size Memory\"\r\n  FROM agents_agent\r\nINNER JOIN clients_site on site_id = clients_site.id\r\nLEFT OUTER JOIN agents_agentcustomfield on agents_agent.id = agents_agentcustomfield.agent_id\r\n\r\nWHERE (field_id IN (SELECT id FROM core_customfield WHERE name = 'Version_du_logiciel_Restau')\r\nOR field_id is null)\r\nAND site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))\r\nAND site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites)))\r\nGroup by \"Size Memory\"\r\nOrder by \"count\" desc\r\n  ",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Type mémoire",
+      "type": "bargauge"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 13,
+        "w": 6,
+        "x": 0,
+        "y": 26
+      },
+      "id": 18,
+      "options": {
+        "displayLabels": [
+          "percent",
+          "name"
+        ],
+        "legend": {
+          "displayMode": "hidden",
+          "placement": "right",
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "8.0.3",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "  select (\r\nSELECT\r\n  count(*)\r\n  FROM agents_agent\r\nWhere\r\n  SUBSTRING(agents_agent.operating_system,POSITION(',' in agents_agent.operating_system)+2,2) = '64' and\r\n  site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites))) and\r\n  site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))) as \"64 Bits\",\r\n\r\n  (SELECT\r\n  count(*)\r\n  FROM agents_agent\r\nWhere\r\n  SUBSTRING(agents_agent.operating_system,POSITION(',' in agents_agent.operating_system)+2,2) = '32' and\r\n   site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites))) and\r\n  site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))) as \"32 Bits\" ",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "boot_time"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "agents_agent",
+          "timeColumn": "last_seen",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Répartition OS",
+      "type": "piechart"
     },
     {
       "datasource": null,
@@ -553,15 +1879,15 @@ dashlayconf="$(cat << EOF
       "gridPos": {
         "h": 13,
         "w": 9,
-        "x": 2,
-        "y": 4
+        "x": 6,
+        "y": 26
       },
       "id": 14,
       "options": {
         "showHeader": true,
         "sortBy": [
           {
-            "desc": true,
+            "desc": false,
             "displayName": "Last Reboot"
           }
         ]
@@ -644,8 +1970,8 @@ dashlayconf="$(cat << EOF
       "gridPos": {
         "h": 13,
         "w": 9,
-        "x": 13,
-        "y": 4
+        "x": 15,
+        "y": 26
       },
       "id": 33,
       "options": {
@@ -683,323 +2009,8 @@ dashlayconf="$(cat << EOF
           ]
         }
       ],
-      "title": "Messages",
+      "title": "Message d'erreur",
       "type": "table"
-    },
-    {
-      "datasource": null,
-      "description": "Liste tout les Windows installé",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 8,
-        "x": 0,
-        "y": 17
-      },
-      "id": 26,
-      "options": {
-        "displayMode": "gradient",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": true
-        },
-        "showUnfilled": true,
-        "text": {
-          "valueSize": 14
-        }
-      },
-      "pluginVersion": "8.0.4",
-      "targets": [
-        {
-          "format": "table",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "  SELECT \r\n  count(*) as \"count\",\r\n  SUBSTRING(agents_agent.operating_system,'(.*)v') AS \"Operating System\"\r\n  FROM agents_agent\r\nINNER JOIN clients_site on site_id = clients_site.id\r\nLEFT OUTER JOIN agents_agentcustomfield on agents_agent.id = agents_agentcustomfield.agent_id\r\n\r\nWHERE (field_id IN (SELECT id FROM core_customfield WHERE name = 'Version_du_logiciel_Restau')\r\nOR field_id is null)\r\nAND site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))\r\nAND site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites)))\r\nGroup by \"Operating System\"\r\nOrder by \"count\" desc\r\n  ",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "boot_time"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "agents_agent",
-          "timeColumn": "last_seen",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "Type of Windows",
-      "type": "bargauge"
-    },
-    {
-      "datasource": null,
-      "description": "Liste tout les processeurs installé",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 8,
-        "x": 8,
-        "y": 17
-      },
-      "id": 54,
-      "options": {
-        "displayMode": "gradient",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "/.*/",
-          "values": true
-        },
-        "showUnfilled": true,
-        "text": {
-          "valueSize": 14
-        }
-      },
-      "pluginVersion": "8.0.4",
-      "targets": [
-        {
-          "format": "table",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "  SELECT \r\n  count(*) as \"count\",\r\n  wmi_detail->'cpu'->0->0->>'Name' as \"CPU Name\"\r\n  FROM agents_agent\r\nINNER JOIN clients_site on site_id = clients_site.id\r\nLEFT OUTER JOIN agents_agentcustomfield on agents_agent.id = agents_agentcustomfield.agent_id\r\n\r\nWHERE (field_id IN (SELECT id FROM core_customfield WHERE name = 'Version_du_logiciel_Restau')\r\nOR field_id is null)\r\nAND site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))\r\nAND site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites)))\r\nGroup by \"CPU Name\"\r\nOrder by \"count\" desc\r\n  ",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "boot_time"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "agents_agent",
-          "timeColumn": "last_seen",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "Type of CPUs",
-      "type": "bargauge"
-    },
-    {
-      "datasource": null,
-      "description": "Liste tout les mémoire installé",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-GrYlRd"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 8,
-        "x": 16,
-        "y": 17
-      },
-      "id": 55,
-      "options": {
-        "displayMode": "gradient",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": true
-        },
-        "showUnfilled": true,
-        "text": {
-          "valueSize": 14
-        }
-      },
-      "pluginVersion": "8.0.4",
-      "targets": [
-        {
-          "format": "table",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "  SELECT \r\n  count(*) as \"count\",\r\n  concat((total_ram),' Gb') as \"Size Memory\"\r\n  FROM agents_agent\r\nINNER JOIN clients_site on site_id = clients_site.id\r\nLEFT OUTER JOIN agents_agentcustomfield on agents_agent.id = agents_agentcustomfield.agent_id\r\n\r\nWHERE (field_id IN (SELECT id FROM core_customfield WHERE name = 'Version_du_logiciel_Restau')\r\nOR field_id is null)\r\nAND site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))\r\nAND site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites)))\r\nGroup by \"Size Memory\"\r\nOrder by \"count\" desc\r\n  ",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "boot_time"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "agents_agent",
-          "timeColumn": "last_seen",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "Amounts of Ram",
-      "type": "bargauge"
-    },
-    {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": [],
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 13,
-        "w": 6,
-        "x": 0,
-        "y": 27
-      },
-      "id": 18,
-      "options": {
-        "displayLabels": [
-          "percent",
-          "name"
-        ],
-        "legend": {
-          "displayMode": "hidden",
-          "placement": "right",
-          "values": [
-            "percent"
-          ]
-        },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "pluginVersion": "8.0.3",
-      "targets": [
-        {
-          "format": "table",
-          "group": [],
-          "metricColumn": "none",
-          "rawQuery": true,
-          "rawSql": "  select (\r\nSELECT\r\n  count(*)\r\n  FROM agents_agent\r\nWhere\r\n  SUBSTRING(agents_agent.operating_system,POSITION(',' in agents_agent.operating_system)+2,2) = '64' and\r\n  site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites))) and\r\n  site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))) as \"64 Bits\",\r\n\r\n  (SELECT\r\n  count(*)\r\n  FROM agents_agent\r\nWhere\r\n  SUBSTRING(agents_agent.operating_system,POSITION(',' in agents_agent.operating_system)+2,2) = '32' and\r\n   site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites))) and\r\n  site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))) as \"32 Bits\" ",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "boot_time"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "agents_agent",
-          "timeColumn": "last_seen",
-          "timeColumnType": "timestamp",
-          "where": [
-            {
-              "name": "$__timeFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "title": "Version of OS 64/32bit",
-      "type": "piechart"
     }
   ],
   "refresh": false,
@@ -1087,8 +2098,8 @@ dashlayconf="$(cat << EOF
         "allValue": null,
         "current": {
           "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "text": "145961 - Azaytoona - GOMCPos API",
+          "value": "145961 - Azaytoona - GOMCPos API"
         },
         "datasource": null,
         "definition": "SELECT  description FROM agents_agent Order By description asc",
@@ -1110,10 +2121,9 @@ dashlayconf="$(cat << EOF
       {
         "allValue": null,
         "current": {
-          "isNone": true,
           "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "Cashmag_Backup_Is_Installed",
+          "value": "Cashmag_Backup_Is_Installed"
         },
         "datasource": null,
         "definition": "select name from core_customfield",
@@ -1165,9 +2175,13 @@ dashlayconf="$(cat << EOF
       {
         "allValue": null,
         "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "selected": true,
+          "text": [
+            "10017-MAG2-C1 / 7264 - Sarroche Hyeres - Milllefeuille C1"
+          ],
+          "value": [
+            "10017-MAG2-C1 / 7264 - Sarroche Hyeres - Milllefeuille C1"
+          ]
         },
         "datasource": null,
         "definition": "SELECT \nCONCAT(hostname, ' / ', DESCRIPTION)\nFROM \nagents_agent\nOrder By\nhostname asc\n\n\n",
@@ -1197,8 +2211,8 @@ dashlayconf="$(cat << EOF
   },
   "timezone": "browser",
   "title": "TacticalRMM dashboard for TRMM",
-  "uid": "dWYQPXknz",
-  "version": 5
+  "uid": "C9B-SXknz",
+  "version": 2
 }
 
 EOF
