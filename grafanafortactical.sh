@@ -3155,7 +3155,9 @@ sudo systemctl start grafana-server
 sudo systemctl enable grafana-server.service
 
 printf >&2 "Please go to admin url: Now you should be able to browse to the Grafana interface at http://${domain}:3000\n\n"
-printf >&2 "1. Sign into Grafana (admin / admin) and change the admin password\n\n"
+printf >&2 "1. Sign into Grafana (admin / admin) and change the admin password.\n\n"
+printf >&2 "2. You can customise the default dashboard by saving a copy.\n\n"
+
 
 echo "Press any key to finish install"
 while [ true ] ; do
