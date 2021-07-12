@@ -44,8 +44,14 @@ read username
 
 while [[ ${domain} != *[.]*[.]* ]]
 do
-echo -ne "${YELLOW}Enter the main domain (if using txt acme e.g. example.com) or the frontend (if using certbot dns e.g. rmm.example.com)${NC}: "
+echo -ne "${YELLOW}Enter the main domain setup ie rmm.yourdomain.com ${NC}: "
 read domain
+done
+
+while [[ ${certdomain} != *[.]*[.]* ]]
+do
+echo -ne "${YELLOW}Enter the letsencrypt domain (if using txt acme e.g. example.com) or the frontend (as above) (if using certbot dns e.g. rmm.example.com)${NC}: "
+read certdomain
 done
 
 admintoken=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 70 | head -n 1)
@@ -75,6 +81,7 @@ echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/a
 sudo apt-get update
 sudo apt-get install grafana
 
+sudo rm /etc/grafana/provisioning/datasources/default.yaml
 sudo touch /etc/grafana/provisioning/datasources/default.yaml
 sudo chown ${username}:${username} /etc/grafana/provisioning/datasources/default.yaml
 
@@ -112,6 +119,7 @@ EOF
 )"
 echo "${dbconf}" > /etc/grafana/provisioning/datasources/default.yaml
 
+sudo rm /etc/grafana/provisioning/dashboards/default.yaml
 sudo touch /etc/grafana/provisioning/dashboards/default.yaml
 sudo chown ${username}:${username} /etc/grafana/provisioning/dashboards/default.yaml
 
@@ -129,9 +137,10 @@ providers:
 
 EOF
 )"
-echo "${dashconf}" > /etc/grafana/provisioning/datasources/default.yaml
+echo "${dashconf}" > /etc/grafana/provisioning/dashboards/default.yaml
 
 sudo mkdir /var/lib/grafana/dashboards
+sudo rm /var/lib/grafana/dashboards/cluster.json
 sudo touch /var/lib/grafana/dashboards/cluster.json
 sudo chown ${username}:${username} /var/lib/grafana/dashboards/cluster.json
 
@@ -241,7 +250,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select \n  concat('Agence: ',clients_site.name,' / Client: ', agents_agent.hostname,' ',agents_agent.DESCRIPTION)\nfrom \n  agents_agent\n  LEFT OUTER JOIN clients_site on agents_agent.site_id = clients_site.id\n  where \n    agents_agent.DESCRIPTION = $Agents_Description",
+          "rawSql": "select \n  concat('Agence: ',clients_site.name,' / Client: ', agents_agent.hostname,' ',agents_agent.DESCRIPTION)\nfrom \n  agents_agent\n  LEFT OUTER JOIN clients_site on agents_agent.site_id = clients_site.id\n  where \n    agents_agent.DESCRIPTION = \$Agents_Description",
           "refId": "A",
           "select": [
             [
@@ -258,7 +267,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -342,7 +351,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select   \r\nCASE\r\n  WHEN (count(*) = 1) THEN 'Connected'\r\n  WHEN (count(*) = 0) THEN 'No Connected'\r\n  ELSE ''\r\n END AS modifiedpvc\r\n  \r\n from agents_agent\r\n   --where (agents_agent.hostname = $Agents_HostName or agents_agent.description = $Agents_Description)  and\r\n   where agents_agent.description = $Agents_Description  and\r\n   last_seen > NOW()- interval '1 hours'\r\n ",
+          "rawSql": "select   \r\nCASE\r\n  WHEN (count(*) = 1) THEN 'Connected'\r\n  WHEN (count(*) = 0) THEN 'No Connected'\r\n  ELSE ''\r\n END AS modifiedpvc\r\n  \r\n from agents_agent\r\n   --where (agents_agent.hostname = \$Agents_HostName or agents_agent.description = \$Agents_Description)  and\r\n   where agents_agent.description = \$Agents_Description  and\r\n   last_seen > NOW()- interval '1 hours'\r\n ",
           "refId": "A",
           "select": [
             [
@@ -359,7 +368,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -453,7 +462,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) / ')) AND check_type='cpuload') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nSELECT \r\n  x AS \"time\",\r\n  y as \"CPU Load\"\r\n  FROM checks_checkhistory\r\n  WHERE x BETWEEN '2021-07-01T13:54:25.526Z' AND '2100-07-02T19:54:25.526Z'\r\n  AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.description = $Agents_Description) AND check_type='cpuload')\r\n  ORDER BY x",
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.hostname = SUBSTRING(\$Agents_HostName,'(.*) / ')) AND check_type='cpuload') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nSELECT \r\n  x AS \"time\",\r\n  y as \"CPU Load\"\r\n  FROM checks_checkhistory\r\n  WHERE x BETWEEN '2021-07-01T13:54:25.526Z' AND '2100-07-02T19:54:25.526Z'\r\n  AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.description = \$Agents_Description) AND check_type='cpuload')\r\n  ORDER BY x",
           "refId": "A",
           "select": [
             [
@@ -470,7 +479,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -562,7 +571,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) / ')) AND check_type='cpuload') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nSELECT \r\n  x AS \"time\",\r\n  y as \"Memory Usage\"\r\nFROM \r\n  checks_checkhistory\r\nWHERE \r\n  x BETWEEN '2021-07-01T13:54:25.526Z' AND '2100-07-02T19:54:25.526Z'\r\n  AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.DESCRIPTION = $Agents_Description) AND check_type='memory')\r\n  ORDER BY x",
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.hostname = SUBSTRING(\$Agents_HostName,'(.*) / ')) AND check_type='cpuload') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nSELECT \r\n  x AS \"time\",\r\n  y as \"Memory Usage\"\r\nFROM \r\n  checks_checkhistory\r\nWHERE \r\n  x BETWEEN '2021-07-01T13:54:25.526Z' AND '2100-07-02T19:54:25.526Z'\r\n  AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.DESCRIPTION = \$Agents_Description) AND check_type='memory')\r\n  ORDER BY x",
           "refId": "A",
           "select": [
             [
@@ -579,7 +588,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -677,7 +686,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) / ')) AND check_type='cpuload') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nSELECT \r\n  x AS \"time\",\r\n  y as \"Disk Usage\"\r\nFROM \r\n  checks_checkhistory\r\nWHERE \r\n  x BETWEEN '2021-07-01T13:54:25.526Z' AND '2100-07-02T19:54:25.526Z'\r\n  AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.DESCRIPTION = $Agents_Description) AND check_type='diskspace')\r\n  ORDER BY x",
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.hostname = SUBSTRING(\$Agents_HostName,'(.*) / ')) AND check_type='cpuload') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nSELECT \r\n  x AS \"time\",\r\n  y as \"Disk Usage\"\r\nFROM \r\n  checks_checkhistory\r\nWHERE \r\n  x BETWEEN '2021-07-01T13:54:25.526Z' AND '2100-07-02T19:54:25.526Z'\r\n  AND check_id IN (SELECT id FROM checks_check WHERE agent_id=(SELECT id FROM agents_agent where agents_agent.DESCRIPTION = \$Agents_Description) AND check_type='diskspace')\r\n  ORDER BY x",
           "refId": "A",
           "select": [
             [
@@ -694,7 +703,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -741,7 +750,7 @@ dashlayconf="$(cat << EOF
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^concat$/",
+          "fields": "/^concat\$/",
           "values": true
         },
         "text": {},
@@ -754,7 +763,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nselect   \r\n  concat(SUBSTRING(agents_agent.operating_system,'(.*),'),' ', wmi_detail->'cpu'->0->0->>'DataWidth',' Bits') \r\n  \r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = $Agents_Description",
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING(\$Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nselect   \r\n  concat(SUBSTRING(agents_agent.operating_system,'(.*),'),' ', wmi_detail->'cpu'->0->0->>'DataWidth',' Bits') \r\n  \r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING(\$Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = \$Agents_Description",
           "refId": "A",
           "select": [
             [
@@ -771,7 +780,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -845,7 +854,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  CASE\n   WHEN (has_patches_pending = true) THEN 'Windows not up to date'\n    WHEN (has_patches_pending = false) THEN 'Windows up to date'\n  ELSE 'nothing'\n END AS  Statut\nFROM agents_agent\nwhere\n  agents_agent.DESCRIPTION = $Agents_Description",
+          "rawSql": "SELECT\n  CASE\n   WHEN (has_patches_pending = true) THEN 'Windows not up to date'\n    WHEN (has_patches_pending = false) THEN 'Windows up to date'\n  ELSE 'nothing'\n END AS  Statut\nFROM agents_agent\nwhere\n  agents_agent.DESCRIPTION = \$Agents_Description",
           "refId": "A",
           "select": [
             [
@@ -862,7 +871,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -906,7 +915,7 @@ dashlayconf="$(cat << EOF
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [],
-          "fields": "/^concat$/",
+          "fields": "/^concat\$/",
           "values": true
         },
         "text": {},
@@ -919,7 +928,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nselect  \r\n  concat(wmi_detail->'cpu'->0->0->>'Name',' \\ ',wmi_detail->'base_board'->0->0->>'Manufacturer')\r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = $Agents_Description",
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING(\$Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nselect  \r\n  concat(wmi_detail->'cpu'->0->0->>'Name',' \\\ ',wmi_detail->'base_board'->0->0->>'Manufacturer')\r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING(\$Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = \$Agents_Description",
           "refId": "A",
           "select": [
             [
@@ -936,7 +945,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -996,7 +1005,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\n\r\nselect   \r\n   concat((total_ram),'Gb / ',concat(wmi_detail->'mem'->0->0->>'Speed','Bits'))\r\n  \r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = $Agents_Description",
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING(\$Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\n\r\nselect   \r\n   concat((total_ram),'Gb / ',concat(wmi_detail->'mem'->0->0->>'Speed','Bits'))\r\n  \r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING(\$Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = \$Agents_Description",
           "refId": "A",
           "select": [
             [
@@ -1013,7 +1022,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -1060,7 +1069,7 @@ dashlayconf="$(cat << EOF
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^concat$/",
+          "fields": "/^concat\$/",
           "values": true
         },
         "text": {},
@@ -1073,7 +1082,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nselect   \r\n  concat(disks->0->>'device',' ', disks->0->>'free',' free on ', disks->0->>'total')\r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = $Agents_Description",
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING(\$Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nselect   \r\n  concat(disks->0->>'device',' ', disks->0->>'free',' free on ', disks->0->>'total')\r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING(\$Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = \$Agents_Description",
           "refId": "A",
           "select": [
             [
@@ -1090,7 +1099,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -1157,7 +1166,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nselect\r\n  concat(disks->0->>'percent',' %') as \"Occupation\"\r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING($Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = $Agents_Description",
+          "rawSql": "/* \r\n.DESCRIPTION\r\nRécupération des informations dans le json\r\n.NOTES\r\nChange Log\r\n  - 03-07-2017 @slu >>> mise en commentaire where agents_agent.hostname = SUBSTRING(\$Agents_HostName,'(.*) /') pour pouvoir charger les données des agents en provenance de TRMM (URL Action)\r\n*/\r\nselect\r\n  concat(disks->0->>'percent',' %') as \"Occupation\"\r\nfrom \r\n  agents_agent\r\n--where agents_agent.hostname = SUBSTRING(\$Agents_HostName,'(.*) /')\r\nwhere \r\n  agents_agent.DESCRIPTION = \$Agents_Description",
           "refId": "A",
           "select": [
             [
@@ -1174,7 +1183,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -1247,7 +1256,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  count(*)\nFROM agents_agent\nwhere \n  site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites))) and\n  site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))\nORDER BY 1",
+          "rawSql": "SELECT\n  count(*)\nFROM agents_agent\nwhere \n  site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN (\$Sites))) and\n  site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN (\$Client)))\nORDER BY 1",
           "refId": "A",
           "select": [
             [
@@ -1264,7 +1273,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -1340,7 +1349,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -1420,7 +1429,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -1501,7 +1510,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -1561,7 +1570,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "  SELECT \r\n  count(*) as \"count\",\r\n  SUBSTRING(agents_agent.operating_system,'(.*)v') AS \"Operating System\"\r\n  FROM agents_agent\r\nINNER JOIN clients_site on site_id = clients_site.id\r\nLEFT OUTER JOIN agents_agentcustomfield on agents_agent.id = agents_agentcustomfield.agent_id\r\n\r\nWHERE (field_id IN (SELECT id FROM core_customfield WHERE name = 'Version_du_logiciel_Restau')\r\nOR field_id is null)\r\nAND site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))\r\nAND site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites)))\r\nGroup by \"Operating System\"\r\nOrder by \"count\" desc\r\n  ",
+          "rawSql": "  SELECT \r\n  count(*) as \"count\",\r\n  SUBSTRING(agents_agent.operating_system,'(.*)v') AS \"Operating System\"\r\n  FROM agents_agent\r\nINNER JOIN clients_site on site_id = clients_site.id\r\nLEFT OUTER JOIN agents_agentcustomfield on agents_agent.id = agents_agentcustomfield.agent_id\r\n\r\nWHERE (field_id IN (SELECT id FROM core_customfield WHERE name = 'Version_du_logiciel_Restau')\r\nOR field_id is null)\r\nAND site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN (\$Client)))\r\nAND site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN (\$Sites)))\r\nGroup by \"Operating System\"\r\nOrder by \"count\" desc\r\n  ",
           "refId": "A",
           "select": [
             [
@@ -1578,7 +1587,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -1638,7 +1647,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "  SELECT \r\n  count(*) as \"count\",\r\n  wmi_detail->'cpu'->0->0->>'Name' as \"CPU Name\"\r\n  FROM agents_agent\r\nINNER JOIN clients_site on site_id = clients_site.id\r\nLEFT OUTER JOIN agents_agentcustomfield on agents_agent.id = agents_agentcustomfield.agent_id\r\n\r\nWHERE (field_id IN (SELECT id FROM core_customfield WHERE name = 'Version_du_logiciel_Restau')\r\nOR field_id is null)\r\nAND site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))\r\nAND site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites)))\r\nGroup by \"CPU Name\"\r\nOrder by \"count\" desc\r\n  ",
+          "rawSql": "  SELECT \r\n  count(*) as \"count\",\r\n  wmi_detail->'cpu'->0->0->>'Name' as \"CPU Name\"\r\n  FROM agents_agent\r\nINNER JOIN clients_site on site_id = clients_site.id\r\nLEFT OUTER JOIN agents_agentcustomfield on agents_agent.id = agents_agentcustomfield.agent_id\r\n\r\nWHERE (field_id IN (SELECT id FROM core_customfield WHERE name = 'Version_du_logiciel_Restau')\r\nOR field_id is null)\r\nAND site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN (\$Client)))\r\nAND site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN (\$Sites)))\r\nGroup by \"CPU Name\"\r\nOrder by \"count\" desc\r\n  ",
           "refId": "A",
           "select": [
             [
@@ -1655,7 +1664,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -1715,7 +1724,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "  SELECT \r\n  count(*) as \"count\",\r\n  concat((total_ram),' Gb') as \"Size Memory\"\r\n  FROM agents_agent\r\nINNER JOIN clients_site on site_id = clients_site.id\r\nLEFT OUTER JOIN agents_agentcustomfield on agents_agent.id = agents_agentcustomfield.agent_id\r\n\r\nWHERE (field_id IN (SELECT id FROM core_customfield WHERE name = 'Version_du_logiciel_Restau')\r\nOR field_id is null)\r\nAND site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))\r\nAND site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites)))\r\nGroup by \"Size Memory\"\r\nOrder by \"count\" desc\r\n  ",
+          "rawSql": "  SELECT \r\n  count(*) as \"count\",\r\n  concat((total_ram),' Gb') as \"Size Memory\"\r\n  FROM agents_agent\r\nINNER JOIN clients_site on site_id = clients_site.id\r\nLEFT OUTER JOIN agents_agentcustomfield on agents_agent.id = agents_agentcustomfield.agent_id\r\n\r\nWHERE (field_id IN (SELECT id FROM core_customfield WHERE name = 'Version_du_logiciel_Restau')\r\nOR field_id is null)\r\nAND site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN (\$Client)))\r\nAND site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN (\$Sites)))\r\nGroup by \"Size Memory\"\r\nOrder by \"count\" desc\r\n  ",
           "refId": "A",
           "select": [
             [
@@ -1732,7 +1741,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -1799,7 +1808,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "  select (\r\nSELECT\r\n  count(*)\r\n  FROM agents_agent\r\nWhere\r\n  SUBSTRING(agents_agent.operating_system,POSITION(',' in agents_agent.operating_system)+2,2) = '64' and\r\n  site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites))) and\r\n  site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))) as \"64 Bits\",\r\n\r\n  (SELECT\r\n  count(*)\r\n  FROM agents_agent\r\nWhere\r\n  SUBSTRING(agents_agent.operating_system,POSITION(',' in agents_agent.operating_system)+2,2) = '32' and\r\n   site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites))) and\r\n  site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))) as \"32 Bits\" ",
+          "rawSql": "  select (\r\nSELECT\r\n  count(*)\r\n  FROM agents_agent\r\nWhere\r\n  SUBSTRING(agents_agent.operating_system,POSITION(',' in agents_agent.operating_system)+2,2) = '64' and\r\n  site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN (\$Sites))) and\r\n  site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN (\$Client)))) as \"64 Bits\",\r\n\r\n  (SELECT\r\n  count(*)\r\n  FROM agents_agent\r\nWhere\r\n  SUBSTRING(agents_agent.operating_system,POSITION(',' in agents_agent.operating_system)+2,2) = '32' and\r\n   site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN (\$Sites))) and\r\n  site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN (\$Client)))) as \"32 Bits\" ",
           "refId": "A",
           "select": [
             [
@@ -1816,7 +1825,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -1899,7 +1908,7 @@ dashlayconf="$(cat << EOF
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT \r\n  clients_site.name AS \"Site\",\r\n  hostname AS \"Hostname\",\r\n  last_seen AS \"Last Response\",\r\n  to_timestamp(boot_time) AS \"Last Reboot\"\r\nFROM agents_agent\r\nINNER JOIN clients_site on site_id = clients_site.id\r\nLEFT OUTER JOIN agents_agentcustomfield on agents_agent.id = agents_agentcustomfield.agent_id\r\nLEFT OUTER JOIN core_customfield on agents_agentcustomfield.field_id = core_customfield.id\r\nWHERE (field_id IN (SELECT id FROM core_customfield WHERE name = '$CustomField')\r\nOR field_id is null)\r\nAND site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN ($Client)))\r\nAND site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN ($Sites)))",
+          "rawSql": "SELECT \r\n  clients_site.name AS \"Site\",\r\n  hostname AS \"Hostname\",\r\n  last_seen AS \"Last Response\",\r\n  to_timestamp(boot_time) AS \"Last Reboot\"\r\nFROM agents_agent\r\nINNER JOIN clients_site on site_id = clients_site.id\r\nLEFT OUTER JOIN agents_agentcustomfield on agents_agent.id = agents_agentcustomfield.agent_id\r\nLEFT OUTER JOIN core_customfield on agents_agentcustomfield.field_id = core_customfield.id\r\nWHERE (field_id IN (SELECT id FROM core_customfield WHERE name = '\$CustomField')\r\nOR field_id is null)\r\nAND site_id IN (SELECT id FROM clients_site WHERE client_id IN (SELECT id FROM clients_client WHERE name IN (\$Client)))\r\nAND site_id IN (SELECT id FROM clients_site WHERE site_id IN (SELECT id FROM clients_site WHERE name IN (\$Sites)))",
           "refId": "A",
           "select": [
             [
@@ -1916,7 +1925,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -2002,7 +2011,7 @@ dashlayconf="$(cat << EOF
           "timeColumnType": "timestamp",
           "where": [
             {
-              "name": "$__timeFilter",
+              "name": "\$__timeFilter",
               "params": [],
               "type": "macro"
             }
@@ -2024,7 +2033,7 @@ dashlayconf="$(cat << EOF
         "current": {
           "selected": false,
           "text": "All",
-          "value": "$__all"
+          "value": "\$__all"
         },
         "datasource": null,
         "definition": "SELECT name FROM clients_client",
@@ -2051,7 +2060,7 @@ dashlayconf="$(cat << EOF
         "current": {
           "selected": false,
           "text": "All",
-          "value": "$__all"
+          "value": "\$__all"
         },
         "datasource": null,
         "definition": "SELECT name FROM clients_site",
@@ -2075,7 +2084,7 @@ dashlayconf="$(cat << EOF
         "current": {
           "selected": false,
           "text": "All",
-          "value": "$__all"
+          "value": "\$__all"
         },
         "datasource": null,
         "definition": "SELECT \nhostname\nFROM \nagents_agent\n\n\n",
@@ -2289,8 +2298,8 @@ domain = ${domain}
 # enable gzip
 ;enable_gzip = false
 # https certs & key file
-cert_file = /etc/letsencrypt/live/${domain}/fullchain.pem
-cert_key = /etc/letsencrypt/live/${domain}/privkey.pem
+cert_file = /etc/letsencrypt/live/${certdomain}/fullchain.pem
+cert_key = /etc/letsencrypt/live/${certdomain}/privkey.pem
 
 # Unix socket path
 ;socket =
@@ -3149,12 +3158,13 @@ EOF
 echo "${grafanaini}" > /etc/grafana/grafana.ini
 
 sudo systemctl daemon-reload
+sudo systemctl stop grafana-server
 sudo systemctl start grafana-server
 
 # start service on system boot
 sudo systemctl enable grafana-server.service
 
-printf >&2 "Please go to admin url: Now you should be able to browse to the Grafana interface at http://${domain}:3000\n\n"
+printf >&2 "Please go to admin url: Now you should be able to browse to the Grafana interface at https://${domain}:3000\n\n"
 printf >&2 "1. Sign into Grafana (admin / admin) and change the admin password.\n\n"
 printf >&2 "2. You can customise the default dashboard by saving a copy.\n\n"
 
