@@ -71,11 +71,8 @@ echo -ne "${YELLOW}Enter the main domain setup ie rmm.yourdomain.com ${NC}: "
 read domain
 done
 
-while [[ ${certdomain} != *[.]*[.]* ]]
-do
 echo -ne "${YELLOW}Enter the letsencrypt domain (if using txt acme e.g. example.com) or the frontend (as above) (if using certbot dns e.g. rmm.example.com)${NC}: "
 read certdomain
-done
 
 admintoken=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 70 | head -n 1)
 
