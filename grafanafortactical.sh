@@ -1,6 +1,29 @@
 #!/bin/bash
 
-####Just scripted up to work from @Yasd and @sebcashmag on Discord forum
+### Basic setup is are:
+##
+### 1. Swap to user setup for tactical rmm - e.g. su tactical
+### 2. Go to home - cd ~/
+### 3. wget https://raw.githubusercontent.com/dinger1986/dvis/master/grafanafortactical.sh
+### 4. chmod +x grafanafortactical.sh
+### 5. ./grafanafortactical.sh
+### 6. Enter your username
+### 7. Enter the domain for the frontend e.g. rmm.mydomain.com
+### 8. Enter your full domain e.g. mydomain.com
+### 9. Go to https://rmm.mydomain.com:3000
+## 10. Go to dashboards and copy the dashboard to reconfigure how you want it
+##
+### Troubleshooting:
+##
+### If you need to rerun the script the only thing that will need redone is changing the postgres dbreader password to the same as is in /etc/grafana/provisioning/datasources/default.yaml
+##
+### 1. To do this type in nano /etc/grafana/provisioning/datasources/default.yaml
+### 2. Copy password under: 
+### secureJsonData:
+###   password: ""
+### 3. Replace the password for dbreader for postgres with the following command
+### 4. sudo -u postgres psql tacticalrmm -c "ALTER USER dbreader WITH PASSWORD 'new_password'"####Just scripted up to work from @Yasd and @sebcashmag on Discord forum
+
 
 #check if running on ubuntu 20.04, Debian or Raspbian
 osname=$(lsb_release -si); osname=${osname^}
