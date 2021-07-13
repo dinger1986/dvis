@@ -22,14 +22,17 @@
 ##
 ### Troubleshooting:
 ##
-### If you need to rerun the script the only thing that will need redone is changing the postgres dbreader password to the same as is in /etc/grafana/provisioning/datasources/default.yaml
+### If you need to rerun the script the only thing that will need redone is changing the postgres dbreader password 
+### to the same as is in /etc/grafana/provisioning/datasources/default.yaml
 ##
 ### 1. To do this type in nano /etc/grafana/provisioning/datasources/default.yaml
 ### 2. Copy password under: 
 ### secureJsonData:
 ###   password: ""
 ### 3. Replace the password for dbreader for postgres with the following command
-### 4. sudo -u postgres psql tacticalrmm -c "ALTER USER dbreader WITH PASSWORD 'new_password'"####Just scripted up to work from @Yasd and @sebcashmag on Discord forum
+### 4. sudo -u postgres psql tacticalrmm -c "ALTER USER dbreader WITH PASSWORD 'new_password'"
+
+#### Just scripted up to work from @Yasd and @sebcashmag on Discord forum
 
 
 #check if running on ubuntu 20.04, Debian or Raspbian
