@@ -17,8 +17,8 @@
 ### 9. Go to https://rmm.mydomain.com:3000
 ### 10. Go to dashboards and copy the dashboard to reconfigure how you want it or keep it as default
 ##
-### Add URL action to Tactical:
-### 
+### Add URL action to Tactical (correct URL will be shown at the end of the script):
+### https://rmm.mydomain.com:3000/d/pLkA1-inz/tacticalrmm-dashboard-trmm?orgId=1&var-Client={{client.name}}&var-Sites={{site.name}}&var-Agents_HostName={{agent.hostname}}
 ##
 ### Troubleshooting:
 ##
@@ -3198,6 +3198,10 @@ sudo systemctl enable grafana-server.service
 printf >&2 "Please go to admin url: Now you should be able to browse to the Grafana interface at https://${domain}:3000\n\n"
 printf >&2 "1. Sign into Grafana (admin / admin) and change the admin password.\n\n"
 printf >&2 "2. You can customise the default dashboard by saving a copy.\n\n"
+printf >&2 "\n\n"
+printf >&2 "URL Action Address is:\n\n"
+printf >&2 "https://${domain}:3000/d/pLkA1-inz/tacticalrmm-dashboard-trmm?orgId=1&var-Client={{client.name}}&var-Sites={{site.name}}&var-Agents_HostName={{agent.hostname}}\n\n"
+
 
 
 echo "Press any key to finish install"
