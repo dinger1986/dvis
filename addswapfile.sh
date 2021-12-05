@@ -17,4 +17,4 @@ addswap="$(cat << EOF
 /swapfile swap swap defaults 0 0
 EOF
 )"
-echo "${addswap}" | tee --append /etc/fstab > /dev/null
+echo "${addswap}" | sudo tee --append /etc/fstab > /dev/null
