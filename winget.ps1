@@ -9,7 +9,7 @@ Invoke-WebRequest https://github.com/microsoft/winget-cli/releases/download/v1.4
 Add-AppxPackage c:\temp\vclibs.appx
 Add-AppxPackage c:\temp\winget.msixbundle
 
-$wingetloc=(Get-Childitem -Path "C:\Program Files\WindowsApps" -Include winget.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -Last 1 | %{$_.FullName} | Split-Path
+$wingetloc=(Get-Childitem -Path "C:\Program Files\WindowsApps" -Include winget.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -Last 1 | %{$_.FullName} | Split-Path)
 
 echo $wingetloc
 
