@@ -4,6 +4,12 @@
 #####Fail2ban setup
 sudo apt install -y fail2ban
 
+strip="User="
+USER=$(grep ${strip} /etc/systemd/system/rmm.service | sed -e "s/^${strip}//")
+sudo chown ${USER}:${USER} -R /etc/fail2ban/filter.d/tacticalrmm.conf
+sudo chown ${USER}:${USER} -R /etc/fail2ban/jail.d/tacticalrmm.local
+
+
 #Set Tactical fail2ban filter conf File
 tacticalfail2banfilter="$(cat << EOF
 [Definition]
@@ -11,7 +17,7 @@ failregex = ^<HOST>.*400.17.*$
 ignoreregex = ^<HOST>.*200.*$
 EOF
 )"
-sudo echo "${tacticalfail2banfilter}" > /etc/fail2ban/filter.d/tacticalrmm.conf
+echo "${tacticalfail2banfilter}" > /etc/fail2ban/filter.d/tacticalrmm.conf
 
 #Set Tactical fail2ban jail conf File
 tacticalfail2banjail="$(cat << EOF
@@ -26,7 +32,7 @@ bantime = 14400
 findtime = 14400
 EOF
 )"
-sudo echo "${tacticalfail2banjail}" > /etc/fail2ban/jail.d/tacticalrmm.local
+echo "${tacticalfail2banjail}" > /etc/fail2ban/jail.d/tacticalrmm.local
 
 sudo systemctl restart fail2ban
 
