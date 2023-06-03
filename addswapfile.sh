@@ -1,6 +1,8 @@
 #!/bin/bash
 
-sudo fallocate -l 2G /swapfile
+SWAPSIZE=$1
+
+sudo fallocate -l ${SWAPSIZE} /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile
 sudo swapon /swapfile
