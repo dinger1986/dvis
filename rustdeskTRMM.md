@@ -1,3 +1,8 @@
+To install Rustdesk and use it with Tactical RMM you need to the the following.
+
+1. Create the following scripts (all are powershell other than the batch script to get the ID).
+2. Create a (URL Action)[https://docs.tacticalrmm.com/functions/url_actions/]
+
 ## Install Script Replace IPADDRESS and KEY
 ```
 $ErrorActionPreference= 'silentlycontinue'
