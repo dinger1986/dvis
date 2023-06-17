@@ -46,8 +46,13 @@ net start rustdesk
 ```
 $ErrorActionPreference= 'silentlycontinue'
 
+# Stop RustDesk first
 net stop rustdesk > null
-taskkill /IM "rustdesk.exe" /F > null
+$ProcessActive = Get-Process rustdesk -ErrorAction SilentlyContinue
+if($ProcessActive -ne $null)
+{
+stop-process -ProcessName rustdesk -Force
+}
 
 $rustdesk_pw = (-join ((65..90) + (97..122) | Get-Random -Count 12 | % {[char]$_})) 
 Start-Process "$env:ProgramFiles\RustDesk\RustDesk.exe" "--password $rustdesk_pw" -wait
@@ -60,6 +65,6 @@ net start rustdesk > null
 ```
 rustdesk://connection/new/{{agent.rustdeskid}}?password={{agent.rustdeskpwd}}
  ```
-## Add Custom Agent Field
-`rustdeskid Type = Text`
+## Add Custom Agent Fields
+`rustdeskid Type = Text` </br>
 `rustdeskpwd Type = Text`
